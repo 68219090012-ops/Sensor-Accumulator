@@ -1,0 +1,17 @@
+/*LAB6.1*/
+//https://app.cirkitdesigner.com/project/d59d5661-3823-4ee4-a621-22e32aa500e6
+
+#define motorPin 9
+
+
+void setup() {
+ pinMode(motorPin,OUTPUT);
+}
+
+
+void loop() {
+  digitalWrite(motorPin,1);
+  delay(2000);
+  digitalWrite(motorPin,0);
+  delay(2000);
+}
