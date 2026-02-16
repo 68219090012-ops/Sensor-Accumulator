@@ -1,0 +1,62 @@
+#include <Servo.h>   // เรียกใช้ไลบรารีสำหรับควบคุม Servo Motor
+
+// -------------------- กำหนดขาอุปกรณ์ --------------------
+const int trigPin = 9;    // ขา Trigger ของ Ultrasonic Sensor
+const int echoPin = 10;   // ขา Echo ของ Ultrasonic Sensor
+const int servoPin = 11;  // ขาที่ต่อกับ Servo Motor
+
+Servo myServo;  // สร้างออบเจ็กต์สำหรับควบคุม Servo
+
+// -------------------- ฟังก์ชันเริ่มต้น --------------------
+void setup() {
+  Serial.begin(9600);          // เริ่มต้นการสื่อสาร Serial Monitor ที่ความเร็ว 9600 bps
+  
+  pinMode(trigPin, OUTPUT);    // กำหนดให้ trigPin เป็น OUTPUT (ส่งสัญญาณ)
+  pinMode(echoPin, INPUT);     // กำหนดให้ echoPin เป็น INPUT (รับสัญญาณ)
+  
+  myServo.attach(servoPin);    // เชื่อมต่อ Servo กับขาที่กำหนด
+  myServo.write(0);            // ตั้งค่าเริ่มต้นให้ Servo อยู่ที่ 0 องศา (ประตูปิด)
+  
+  Serial.println("Smart Door System Ready!");  // แสดงข้อความเมื่อระบบพร้อมทำงาน
+}
+
+// -------------------- ฟังก์ชันทำงานซ้ำ --------------------
+void loop() {
+
+  long duration, distance;  // ตัวแปรเก็บเวลาและระยะทาง
+  
+  // ----- ส่งคลื่น Ultrasonic -----
+  digitalWrite(trigPin, LOW);       // เคลียร์สัญญาณก่อน
+  delayMicroseconds(2);             
+  digitalWrite(trigPin, HIGH);      // ส่งสัญญาณ HIGH
+  delayMicroseconds(10);            // ส่งค้างไว้ 10 ไมโครวินาที
+  digitalWrite(trigPin, LOW);       // ปิดสัญญาณ
+  
+  // ----- รับสัญญาณสะท้อนกลับ -----
+  duration = pulseIn(echoPin, HIGH);   // วัดเวลาที่สัญญาณสะท้อนกลับมา
+  
+  // ----- คำนวณระยะทาง (หน่วยเป็นเซนติเมตร) -----
+  // หาร 2 เพราะเป็นเวลาไป-กลับ และหาร 29.1 เพื่อแปลงเป็นเซนติเมตร
+  distance = (duration / 2) / 29.1;
+
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  // ----- เงื่อนไขตรวจจับวัตถุ -----
+  // ถ้าระยะมากกว่า 0 และน้อยกว่า 5 ซม.
+  if (distance > 0 && distance < 5) { 
+    
+    Serial.println("Person Detected! Door Opening...");
+    
+    myServo.write(60);   // หมุน Servo ไปที่ 60 องศา (เปิดประตู)
+    
+    delay(5000);         // เปิดประตูค้างไว้ 5 วินาที
+    
+    myServo.write(0);    // หมุนกลับ 0 องศา (ปิดประตู)
+    
+    Serial.println("Door Closing...");
+  }
+
+  delay(100);  // หน่วงเวลาเล็กน้อยก่อนวนลูปใหม่
+}
